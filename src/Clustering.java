@@ -17,32 +17,6 @@ public class Clustering {
     	this.setNumOfClusters(k);
     	this.setDataPercent(dataPercent / 100.00);
     	this.centroids = new ArrayList<ArrayList<Double>>();
-    	/*// // initializing array to set clusters;
- 		this.finalClusters= new ArrayList[numOfClusters];
-        for (int i = 0; i < numOfClusters; i++) { 
-            this.finalClusters[i] = new ArrayList<Integer>(); 
-        }*/
-        /*ArrayList<Integer> obj1= new ArrayList<Integer>(), obj2= new ArrayList<Integer>(),obj3= new ArrayList<Integer>(), obj4= new ArrayList<Integer>(), obj5= new ArrayList<Integer>(),obj6= new ArrayList<Integer>();
-        obj1.add(185);
-        obj1.add(72);
-        obj2.add(170);
-        obj2.add(56);
-        obj3.add(168);
-        obj3.add(60);
-        obj4.add(179);
-        obj4.add(68);
-        obj5.add(182);
-        obj5.add(72);
-        obj6.add(188);
-        obj6.add(77);
-        dataset.add(obj1);
-        dataset.add(obj2);
-        dataset.add(obj3);
-        dataset.add(obj4);
-        dataset.add(obj5);
-        dataset.add(obj6);
-        /*centroids.add(dataset.get(0));
-        centroids.add(dataset.get(1));*/
     }
     
     /* ----------------------- Functions -----------------------------*/
@@ -54,17 +28,20 @@ public class Clustering {
     
     // Initialize k centroid to start with
  	public void initializeMeans() {	
+ 		// To save all old taken records to don't repeat
+ 		ArrayList<Integer> takenRecords = new ArrayList<Integer>();
+ 		
  		// Get random number
       	Random rg = new Random();
-      	int randQ, oldRand = -1;
+      	int randQ;
  		
       	//Loop to get initial centroids
       	for(int i=0; i<numOfClusters; i++) {
  			randQ = rg.nextInt(dataset.size());
- 			while(randQ==oldRand)
+ 			while(takenRecords.contains(randQ))
  				randQ = rg.nextInt(dataset.size());
  			centroids.add(dataset.get(randQ));
- 			oldRand = randQ;
+ 			takenRecords.add(randQ);
  		}
  	}
  	
@@ -75,6 +52,7 @@ public class Clustering {
         for (int i = 0; i < numOfClusters; i++) { 
             clusters[i] = new ArrayList<Integer>(); 
         }
+        
  		double minDist, dist;
  		int index;
  		for(int i=0;i<dataset.size();i++) {
@@ -93,7 +71,7 @@ public class Clustering {
  		return clusters;
  	}
  	
- 	// Calculate distance between two points with Manhattan formula |x-a| + |y-b|
+ 	// Calculate distance between two points with Manhattan formula |x1-x2| + |y1-y2|
   	public double calcDistanceBetweenTwo(ArrayList<Double> a, ArrayList<Double> b) {
   		double distance = 0.00;
   		for(int i=0;i<a.size();i++)
