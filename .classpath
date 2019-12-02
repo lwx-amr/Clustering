@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="/home/amr/Desktop/is/Data Mining/Assignment 2/Clustering/lib/xmlbeans-2.6.0.jar"/>
+	<classpathentry kind="lib" path="/home/amr/Desktop/is/Data Mining/Assignment 2/Clustering/lib/poi-ooxml-schemas-3.17.jar"/>
+	<classpathentry kind="lib" path="/home/amr/Desktop/is/Data Mining/Assignment 2/Clustering/lib/poi-ooxml-3.17.jar"/>
+	<classpathentry kind="lib" path="/home/amr/Desktop/is/Data Mining/Assignment 2/Clustering/lib/poi-3.17.jar"/>
+	<classpathentry kind="lib" path="/home/amr/Desktop/is/Data Mining/Assignment 2/Clustering/lib/commons-collections4-4.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

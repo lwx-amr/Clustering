@@ -7,23 +7,22 @@ public class Clustering {
 	private String dataFile; 
     private int numOfClusters; 
     private double dataPercent;
-    private ArrayList<ArrayList<Integer>> dataset, means;
-    private ArrayList<Integer>[] clusters;
+    private ArrayList<ArrayList<Double>> dataset, centroids;
+    private ArrayList<Integer>[] finalClusters;
     
     
 	// Constructor 
     public Clustering(String dataFile, int k, double dataPercent) {
     	this.setDataFile(dataFile);
     	this.setNumOfClusters(k);
-    	this.setDataPercent(dataPercent);
-    	this.dataset = new ArrayList<ArrayList<Integer>>();
-    	this.means = new ArrayList<ArrayList<Integer>>();
-    	this.clusters = new ArrayList[k];
-    	// initializing array;
-        for (int i = 0; i < k; i++) { 
-            this.clusters[i] = new ArrayList<Integer>(); 
-        }
-        ArrayList<Integer> obj1= new ArrayList<Integer>(), obj2= new ArrayList<Integer>(),obj3= new ArrayList<Integer>(), obj4= new ArrayList<Integer>(), obj5= new ArrayList<Integer>(),obj6= new ArrayList<Integer>();
+    	this.setDataPercent(dataPercent / 100.00);
+    	this.centroids = new ArrayList<ArrayList<Double>>();
+    	/*// // initializing array to set clusters;
+ 		this.finalClusters= new ArrayList[numOfClusters];
+        for (int i = 0; i < numOfClusters; i++) { 
+            this.finalClusters[i] = new ArrayList<Integer>(); 
+        }*/
+        /*ArrayList<Integer> obj1= new ArrayList<Integer>(), obj2= new ArrayList<Integer>(),obj3= new ArrayList<Integer>(), obj4= new ArrayList<Integer>(), obj5= new ArrayList<Integer>(),obj6= new ArrayList<Integer>();
         obj1.add(185);
         obj1.add(72);
         obj2.add(170);
@@ -42,29 +41,40 @@ public class Clustering {
         dataset.add(obj4);
         dataset.add(obj5);
         dataset.add(obj6);
-        /*means.add(dataset.get(0));
-        means.add(dataset.get(1));*/
+        /*centroids.add(dataset.get(0));
+        centroids.add(dataset.get(1));*/
     }
     
     /* ----------------------- Functions -----------------------------*/
-    // Initialize k means to start with
+    // Function Call ExcelFileController to read dataset
+    public void initializeDataSet() {
+		ExcelFileController objEx = new ExcelFileController(dataFile, dataPercent,1000);
+		dataset = objEx.readData();
+    }
+    
+    // Initialize k centroid to start with
  	public void initializeMeans() {	
  		// Get random number
       	Random rg = new Random();
       	int randQ, oldRand = -1;
  		
-      	//Loop to get initial means
+      	//Loop to get initial centroids
       	for(int i=0; i<numOfClusters; i++) {
  			randQ = rg.nextInt(dataset.size());
  			while(randQ==oldRand)
  				randQ = rg.nextInt(dataset.size());
- 			means.add(dataset.get(randQ));
+ 			centroids.add(dataset.get(randQ));
  			oldRand = randQ;
  		}
  	}
  	
  	// Add each of row to it's mean based on distance function
- 	public void mapDataToClusters() {
+ 	public ArrayList<Integer>[] mapDataToClusters(ArrayList<ArrayList<Double>> currentCentroids) {
+ 		// // initializing array to set clusters;
+ 		ArrayList<Integer>[] clusters = new ArrayList[numOfClusters];
+        for (int i = 0; i < numOfClusters; i++) { 
+            clusters[i] = new ArrayList<Integer>(); 
+        }
  		double minDist, dist;
  		int index;
  		for(int i=0;i<dataset.size();i++) {
@@ -72,7 +82,7 @@ public class Clustering {
  			dist = 0.00;
  			index = 0;
  			for(int j=0;j<numOfClusters;j++) {
- 				dist = calcDistanceBetweenTwo(means.get(j), dataset.get(i));
+ 				dist = calcDistanceBetweenTwo(currentCentroids.get(j), dataset.get(i));
  	 			if(dist<minDist) {
  	 				minDist = dist;
  	 				index = j;
@@ -80,25 +90,96 @@ public class Clustering {
  	 		}
  			clusters[index].add(i);
  		}
+ 		return clusters;
  	}
  	
  	// Calculate distance between two points with Manhattan formula |x-a| + |y-b|
-  	public double calcDistanceBetweenTwo(ArrayList<Integer> a, ArrayList<Integer> b) {
+  	public double calcDistanceBetweenTwo(ArrayList<Double> a, ArrayList<Double> b) {
   		double distance = 0.00;
-  		for(int i=0;i<a.size();i++) {
+  		for(int i=0;i<a.size();i++)
   			distance += Math.abs(a.get(i)-b.get(i));
-  		}
   		return distance;
   	}
  	
-  	// Print Clusters
-  	public void print() {
-  		for(int i=0; i<clusters.length;i++){
-  			System.out.println(clusters[i].toString());
+  	// Calculate new centroid values
+  	public ArrayList<ArrayList<Double>> calcNewCentroids(ArrayList<Integer>[] currentClusters){
+  		ArrayList<ArrayList<Double>> newCetroids = new ArrayList<ArrayList<Double>>();
+  		ArrayList<Double> centroid;
+  		ArrayList<ArrayList<Double>> clusterContent;
+  		double colSum;
+  		for(int i=0; i<currentClusters.length; i++) {
+  			centroid = new ArrayList<Double>();
+  			clusterContent = new ArrayList<ArrayList<Double>>();
+  			for(int j=0; j<currentClusters[i].size(); j++) {
+  				clusterContent.add(dataset.get(currentClusters[i].get(j)));
+  	  		}
+  			for(int m=0; m<dataset.get(0).size(); m++) {
+  				colSum = 0;
+  	  			for(int k=0; k<clusterContent.size(); k++) {
+  	  				if(clusterContent.get(k).size()==0) // if we have empty cluster
+   	  					continue;
+  	  				colSum += clusterContent.get(k).get(m);
+  	  			}
+  	  			centroid.add(colSum/clusterContent.size());
+  	  		}
+  			newCetroids.add(centroid);
+  		}
+  		return newCetroids;
+  	}
+  	
+  	// Check if current centroids are equal to last one
+  	public boolean checkEqualty(ArrayList<Integer>[] currentClusters) {
+  		for(int i=0; i<currentClusters.length;i++) {
+  			if(!currentClusters[i].toString().equals(finalClusters[i].toString())) {
+  				return false;
+  			}
+  		}
+  		return true;
+  	}
+  	
+  	// Output execution details 
+  	public void output() {
+  		System.out.println("\n\n//---- Centroids ------//");
+  		for(int i=0; i<centroids.size();i++){
+  			System.out.println(centroids.get(i).toString());
+  		}
+  		System.out.println("\n\n//---- Clusters ------//");
+  		for(int i=0; i<finalClusters.length;i++){  			
+  			for(int j=0; j<finalClusters[i].size(); j++) {
+  				System.out.print("User"+ (finalClusters[i].get(j)+1) + " ");
+  			}
+  			System.out.println("");
   		}
   	}
- 	/* -------------------- Setters & Getters ----------------------*/
-	
+ 	
+  	// Execute the full algorithm
+  	public void execute() {
+  		
+  		// Step 1: Initialization
+  		initializeDataSet();
+		initializeMeans();
+		
+		// Step 2: Find first clusters
+		ArrayList<Integer>[] currentClusters = mapDataToClusters(centroids);
+		finalClusters = currentClusters;
+		
+		// Step 3: Repeat till no change
+		boolean noChange = false;
+		while(!noChange) {
+			output();
+			ArrayList<ArrayList<Double>> newCentroids = calcNewCentroids(currentClusters);
+			currentClusters = mapDataToClusters(newCentroids);
+			if(checkEqualty(currentClusters))
+				noChange = true;
+			finalClusters = currentClusters;
+			centroids = newCentroids;
+		}
+		
+		// Step 4: Print final output
+		output();
+  	}
+  	
+  	/* -------------------- Setters & Getters ----------------------*/
  	public int getNumOfClusters() {
 		return numOfClusters;
 	}
@@ -124,9 +205,7 @@ public class Clustering {
 	}
 	
 	public static void main(String args[]){
-		Clustering obj = new Clustering("amr.txt", 2, 70);
-		obj.initializeMeans();
-		obj.mapDataToClusters();
-		obj.print();
+		Clustering obj = new Clustering("review_ratings.xlsx", 2, 1);
+		obj.execute();	
 	}
 }
