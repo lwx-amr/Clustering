@@ -1,5 +1,6 @@
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.Scanner;
 
 public class Clustering {
 	
@@ -9,7 +10,7 @@ public class Clustering {
     private double dataPercent;
     private ArrayList<ArrayList<Double>> dataset, centroids;
     private ArrayList<Integer>[] finalClusters;
-    
+	private static Scanner scanner;
     
 	// Constructor 
     public Clustering(String dataFile, int k, double dataPercent) {
@@ -85,12 +86,14 @@ public class Clustering {
   		ArrayList<Double> centroid;
   		ArrayList<ArrayList<Double>> clusterContent;
   		double colSum;
+  		//read current clusters and add data in cluster content
   		for(int i=0; i<currentClusters.length; i++) {
   			centroid = new ArrayList<Double>();
   			clusterContent = new ArrayList<ArrayList<Double>>();
   			for(int j=0; j<currentClusters[i].size(); j++) {
   				clusterContent.add(dataset.get(currentClusters[i].get(j)));
   	  		}
+  			// to calc new centroid col / row
   			for(int m=0; m<dataset.get(0).size(); m++) {
   				colSum = 0;
   	  			for(int k=0; k<clusterContent.size(); k++) {
@@ -105,10 +108,19 @@ public class Clustering {
   		return newCetroids;
   	}
   	
-  	// Check if current centroids are equal to last one
+  	// Check if current cluster are equal to last one
   	public boolean checkEqualty(ArrayList<Integer>[] currentClusters) {
   		for(int i=0; i<currentClusters.length;i++) {
   			if(!currentClusters[i].toString().equals(finalClusters[i].toString())) {
+  				return false;
+  			}
+  		}
+  		return true;
+  	}
+  	
+  	public boolean checkNewCent(ArrayList<ArrayList<Double>> newCentroids) {
+  		for(int i=0; i<newCentroids.size();i++) {
+  			if(!newCentroids.get(i).toString().equals(centroids.get(i).toString())) {
   				return false;
   			}
   		}
@@ -121,8 +133,9 @@ public class Clustering {
   		for(int i=0; i<centroids.size();i++){
   			System.out.println(centroids.get(i).toString());
   		}
-  		System.out.println("\n\n//---- Clusters ------//");
-  		for(int i=0; i<finalClusters.length;i++){  			
+  		System.out.println("\n\n//------------------------------------------//");
+  		for(int i=0; i<finalClusters.length;i++){
+  			System.out.print("Cluster" + (i+1) + ": ");
   			for(int j=0; j<finalClusters[i].size(); j++) {
   				System.out.print("User"+ (finalClusters[i].get(j)+1) + " ");
   			}
@@ -130,7 +143,7 @@ public class Clustering {
   		}
   	}
  	
-  	// Execute the full algorithm
+  	// Execute the full algorithm 
   	public void execute() {
   		
   		// Step 1: Initialization
@@ -146,6 +159,10 @@ public class Clustering {
 		while(!noChange) {
 			output();
 			ArrayList<ArrayList<Double>> newCentroids = calcNewCentroids(currentClusters);
+			
+			if(checkNewCent(newCentroids))
+				break;
+			
 			currentClusters = mapDataToClusters(newCentroids);
 			if(checkEqualty(currentClusters))
 				noChange = true;
@@ -183,7 +200,21 @@ public class Clustering {
 	}
 	
 	public static void main(String args[]){
-		Clustering obj = new Clustering("review_ratings.xlsx", 2, 1);
-		obj.execute();	
+		scanner = new Scanner(System.in);
+		String fileName;
+		int k;
+		double percent;
+		
+		System.out.print("Filename: " );
+		fileName = scanner.nextLine();
+		
+		System.out.print("Number of clusters: " );
+		k = scanner.nextInt();
+		
+		System.out.print("Percentage to read: " );
+		percent = scanner.nextDouble();
+		
+		Clustering obj = new Clustering(fileName, k, percent);
+		obj.execute();
 	}
 }
